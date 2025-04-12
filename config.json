@@ -1,19 +1,11 @@
 {
   "files": [
     {
-      "filename": "a.xlsx",
+      "filename": "carreta_pricelist_7jyj.xlsx",
       "columns": {
-        "brand": 3,
-        "article": 7,
-        "name": 4
-      }
-    },
-    {
-      "filename": "b.xlsx",
-      "columns": {
-        "brand": 2,
-        "article": 9,
-        "name": 12
+        "brand": 0,
+        "article": 1,
+        "name": 2
       }
     }
   ]

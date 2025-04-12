@@ -67,10 +67,6 @@ func main() {
 		log.Fatalf("Ошибка парсинга конфигурационного файла: %v", err)
 	}
 
-	// Дополнительно: выводим содержимое распарсенного JSON для проверки
-	jsonBytes, _ := json.MarshalIndent(config, "", "  ")
-	log.Println(string(jsonBytes))
-
 	// Подключение к временной MySQL базе для обработки данных
 	dsn := "root:1234@tcp(127.0.0.1:3306)/testdb?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -102,22 +98,42 @@ func main() {
 		log.Fatalf("Не удалось создать таблицу: %v", err)
 	}
 
-	// Чтение всех xlsx файлов из директории
 	dirPath := "./prices" // Путь к директории с файлами
 	files, err := os.ReadDir(dirPath)
 	if err != nil {
 		log.Fatalf("Не удалось прочитать директорию: %v", err)
 	}
 
-	var wg sync.WaitGroup // Группа ожидания для управления горутинами
+	var wg sync.WaitGroup
 
 	for _, file := range files {
 		if filepath.Ext(file.Name()) == ".xlsx" {
+			filePath := filepath.Join(dirPath, file.Name())
+
+			if !isValidFile(filePath) {
+				log.Printf("Файл '%s' не найден или недействителен.\n", filePath)
+				continue
+			}
+
+			// Поиск настроек для текущего файла
+			var foundConfig *FileConfig
+			for _, fc := range config.Files {
+				if fc.Filename == file.Name() {
+					foundConfig = &fc
+					break
+				}
+			}
+
+			if foundConfig == nil {
+				log.Printf("Настройки для файла '%s' не найдены в конфигурации.\n", file.Name())
+				continue
+			}
+
 			wg.Add(1) // Добавляем задачу в группу ожидания
-			go func(filePath string) {
+			go func(filePath string, settings ColumnSettings) {
 				defer wg.Done() // Отмечаем задачу как выполненную после завершения
-				processXLSXFile(db, filePath)
-			}(filepath.Join(dirPath, file.Name()))
+				processXLSXFileWithConfig(db, filePath, settings)
+			}(filePath, foundConfig.Columns)
 		}
 	}
 
@@ -130,6 +146,15 @@ func main() {
 	elapsedTime := time.Since(startTime) // Вычисляем время выполнения
 	fmt.Printf("Время выполнения (форматированный вывод): %.2f секунд\n", elapsedTime.Seconds())
 	fmt.Println("Время выполнения (стандарный вывод):", elapsedTime)
+}
+
+// Функция для проверки существования файла
+func isValidFile(filePath string) bool {
+	info, err := os.Stat(filePath)
+	if err != nil {
+		return false
+	}
+	return !info.IsDir()
 }
 
 // Функция для очистки таблицы
@@ -174,8 +199,8 @@ func generateHash(article, brand string) string {
 	return hex.EncodeToString(hash[:])
 }
 
-// Обработка одного xlsx файла
-func processXLSXFile(db *gorm.DB, filePath string) {
+// Обработка одного xlsx файла с учетом конфигурации
+func processXLSXFileWithConfig(db *gorm.DB, filePath string, settings ColumnSettings) {
 	f, err := excelize.OpenFile(filePath)
 	if err != nil {
 		log.Printf("Не удалось открыть файл %s: %v\n", filePath, err)
@@ -201,9 +226,10 @@ func processXLSXFile(db *gorm.DB, filePath string) {
 				continue // Пропускаем строки, где недостаточно данных
 			}
 
-			brand := normalizeBrand(row[1])     // Нормализуем бренд
-			article := normalizeArticle(row[2]) // Нормализуем артикул
-			name := strings.TrimSpace(row[3])   // Очищаем название
+			// Извлекаем значения согласно конфигурации
+			brand := normalizeBrand(row[settings.Brand])       // Нормализуем бренд
+			article := normalizeArticle(row[settings.Article]) // Нормализуем артикул
+			name := strings.TrimSpace(row[settings.Name])      // Очищаем название
 
 			// Генерируем хэш для комбинации article + brand
 			hash := generateHash(article, brand)
@@ -230,7 +256,6 @@ func processXLSXFile(db *gorm.DB, filePath string) {
 			}
 		}
 	}
-
 }
 
 // Нормализация артикула (убираем специальные символы и преобразуем в нижний регистр)
@@ -294,7 +319,7 @@ func exportToSQLFile(db *gorm.DB, outputPath string) {
 
 // Экранирование строк для SQL
 func escapeSQL(value string) string {
-	// Экранируем обратный слэш (\) сначала, так как он используется для других escape-символов
+	// Экранируем обратный слэш ($ сначала, так как он используется для других escape-символов
 	value = strings.ReplaceAll(value, "\\", "\\\\")
 	// Экранируем одинарные кавычки (') путем удвоения
 	value = strings.ReplaceAll(value, "'", "''")
