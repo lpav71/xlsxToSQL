@@ -246,15 +246,15 @@ func processXLSXFileWithConfig(db *gorm.DB, filePath string, settings ColumnSett
 
 			// Если записи нет или новое название длиннее, обновляем запись
 			if existing.ID == 0 || len(name) > len(existing.Name) {
-				mu.Lock()
 				if existing.ID == 0 {
 					// Создаем новую запись, если она еще не существует
 					db.Create(&Product{Article: article, Brand: brand, Name: name, Hash: hash})
 				} else {
 					// Обновляем запись, если новое название длиннее
+					mu.Lock()
 					db.Model(&Product{}).Where("hash = ?", hash).Update("name", name)
+					mu.Unlock()
 				}
-				mu.Unlock()
 			}
 		}
 	}
