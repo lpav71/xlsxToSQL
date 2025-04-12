@@ -56,6 +56,7 @@ type Config struct {
 var mu sync.Mutex
 var wg sync.WaitGroup
 var config Config
+var products []Product
 
 func main() {
 	// Чтение конфигурационного файла
@@ -296,7 +297,6 @@ func exportToSQLFile(db *gorm.DB, outputPath string) {
 	limit := 1000 // Количество записей за одну итерацию
 	offset := 0
 	for {
-		var products []Product
 		err := db.Limit(limit).Offset(offset).Find(&products).Error
 		if err != nil {
 			log.Fatalf("Ошибка при выборке данных: %v", err)
