@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"gorm.io/gorm/clause"
@@ -34,14 +35,52 @@ func (Product) TableName() string {
 	return "products"
 }
 
+// Структура для хранения настроек колонок
+type ColumnSettings struct {
+	Brand   int `json:"brand"`   // Индекс колонки для бренда
+	Article int `json:"article"` // Индекс колонки для артикула
+	Name    int `json:"name"`    // Индекс колонки для названия
+}
+
+// Структура для хранения информации о каждом файле
+type FileConfig struct {
+	Filename string         `json:"filename"` // Имя файла
+	Columns  ColumnSettings `json:"columns"`  // Настройки колонок
+}
+
+// Глобальная структура для хранения всех настроек
+type Config struct {
+	Files []FileConfig `json:"files"` // Список файлов и их настроек
+}
+
 var mu sync.Mutex
 
 func main() {
+	// Чтение конфигурационного файла
+	configData, err := os.ReadFile("./config.json")
+	if err != nil {
+		log.Fatalf("Не удалось прочитать конфигурационный файл: %v", err)
+	}
+
+	var config Config
+	if err := json.Unmarshal(configData, &config); err != nil {
+		log.Fatalf("Ошибка парсинга конфигурационного файла: %v", err)
+	}
+
+	// Дополнительно: выводим содержимое распарсенного JSON для проверки
+	jsonBytes, _ := json.MarshalIndent(config, "", "  ")
+	log.Println(string(jsonBytes))
+
 	// Подключение к временной MySQL базе для обработки данных
 	dsn := "root:1234@tcp(127.0.0.1:3306)/testdb?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Не удалось подключиться к базе данных: %v", err)
+	}
+
+	// Очистка таблицы перед началом работы
+	if err := clearTable(db, "products"); err != nil {
+		log.Fatalf("Ошибка при очистке таблицы: %v", err)
 	}
 
 	// Настройка пула соединений
@@ -87,11 +126,6 @@ func main() {
 
 	// Экспорт данных в SQL файл
 	exportToSQLFile(db, "output.sql")
-
-	// Очистка таблицы перед завершением
-	//if err := clearTable(db, "products"); err != nil {
-	//	log.Fatalf("Ошибка при очистке таблицы: %v", err)
-	//}
 
 	elapsedTime := time.Since(startTime) // Вычисляем время выполнения
 	fmt.Printf("Время выполнения (форматированный вывод): %.2f секунд\n", elapsedTime.Seconds())
