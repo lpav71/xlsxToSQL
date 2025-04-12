@@ -77,7 +77,7 @@ func main() {
 
 	// Очистка таблицы перед началом работы
 	if err := clearTable(db, "products"); err != nil {
-		log.Fatalf("Ошибка при очистке таблицы: %v", err)
+		fmt.Printf("Таблица не найдена. Очистка не требуется: %v\n", err)
 	}
 
 	// Настройка пула соединений
@@ -158,6 +158,12 @@ func isValidFile(filePath string) bool {
 
 // Функция для очистки таблицы
 func clearTable(db *gorm.DB, tableName string) error {
+	// Проверяем, существует ли таблица
+	if !db.Migrator().HasTable(tableName) {
+		return fmt.Errorf("таблица '%s' не существует", tableName)
+	}
+
+	// Очищаем таблицу, если она существует
 	return db.Exec(fmt.Sprintf("TRUNCATE TABLE `%s`", tableName)).Error
 }
 
