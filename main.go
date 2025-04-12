@@ -54,6 +54,8 @@ type Config struct {
 }
 
 var mu sync.Mutex
+var wg sync.WaitGroup
+var config Config
 
 func main() {
 	// Чтение конфигурационного файла
@@ -62,7 +64,6 @@ func main() {
 		log.Fatalf("Не удалось прочитать конфигурационный файл: %v", err)
 	}
 
-	var config Config
 	if err := json.Unmarshal(configData, &config); err != nil {
 		log.Fatalf("Ошибка парсинга конфигурационного файла: %v", err)
 	}
@@ -103,8 +104,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Не удалось прочитать директорию: %v", err)
 	}
-
-	var wg sync.WaitGroup
 
 	for _, file := range files {
 		if filepath.Ext(file.Name()) == ".xlsx" {
