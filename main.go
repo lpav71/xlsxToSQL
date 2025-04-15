@@ -232,9 +232,9 @@ func processXLSXFileWithConfig(db *gorm.DB, filePath string, settings ColumnSett
 			}
 
 			// Извлекаем значения согласно конфигурации
-			brand := normalizeBrand(row[settings.Brand])       // Нормализуем бренд
-			article := normalizeArticle(row[settings.Article]) // Нормализуем артикул
-			name := strings.TrimSpace(row[settings.Name])      // Очищаем название
+			brand := normalizeBrand(row[settings.Brand-1])       // Нормализуем бренд
+			article := normalizeArticle(row[settings.Article-1]) // Нормализуем артикул
+			name := strings.TrimSpace(row[settings.Name-1])      // Очищаем название
 
 			// Генерируем хэш для комбинации article + brand
 			hash := generateHash(article, brand)

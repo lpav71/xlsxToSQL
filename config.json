@@ -3,9 +3,9 @@
     {
       "filename": "carreta_pricelist_7jyj.xlsx",
       "columns": {
-        "brand": 0,
-        "article": 1,
-        "name": 2
+        "brand": 1,
+        "article": 2,
+        "name": 3
       }
     }
   ]
