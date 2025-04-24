@@ -145,6 +145,8 @@ func main() {
 	elapsedTime := time.Since(startTime) // Вычисляем время выполнения
 	fmt.Printf("Время выполнения (форматированный вывод): %.2f секунд\n", elapsedTime.Seconds())
 	fmt.Println("Время выполнения (стандарный вывод):", elapsedTime)
+
+	fmt.Scanln()
 }
 
 // Функция для проверки существования файла
@@ -311,7 +313,6 @@ func exportToSQLFile(db *gorm.DB, outputPath string) {
 	// Пагинация для выборки данных
 	limit := 1000 // Количество записей за одну итерацию
 	offset := 0
-	var products []Product // Предполагаем, что у вас есть структура Product
 
 	for {
 		err := db.Limit(limit).Offset(offset).Find(&products).Error
