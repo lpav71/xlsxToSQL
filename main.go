@@ -283,27 +283,36 @@ func normalizeBrand(brand string) string {
 
 // Экспорт данных в SQL файл
 func exportToSQLFile(db *gorm.DB, outputPath string) {
-	file, err := os.Create(outputPath)
+	// Проверяем существование файла
+	_, err := os.Stat(outputPath)
+	fileExists := !os.IsNotExist(err)
+
+	// Открываем файл для записи (создаем или открываем для добавления)
+	file, err := os.OpenFile(outputPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Fatalf("Не удалось создать SQL файл: %v", err)
+		log.Fatalf("Не удалось открыть/создать SQL файл: %v", err)
 	}
 	defer file.Close()
 
 	writer := bufio.NewWriterSize(file, 1<<20) // 1 MB буфер
 	defer writer.Flush()
 
-	// Записываем заголовок создания таблицы
-	tableName := "products"
-	writer.WriteString(fmt.Sprintf("CREATE TABLE IF NOT EXISTS `%s` (\n", tableName))
-	writer.WriteString("`id` INT AUTO_INCREMENT PRIMARY KEY,\n")
-	writer.WriteString("`article` VARCHAR(255) NOT NULL,\n")
-	writer.WriteString("`brand` VARCHAR(255) NOT NULL,\n")
-	writer.WriteString("`name` VARCHAR(255) NOT NULL\n")
-	writer.WriteString(");\n\n")
+	// Если файл не существовал, записываем заголовок создания таблицы
+	if !fileExists {
+		tableName := "products"
+		writer.WriteString(fmt.Sprintf("CREATE TABLE IF NOT EXISTS `%s` (\n", tableName))
+		writer.WriteString("`id` INT AUTO_INCREMENT PRIMARY KEY,\n")
+		writer.WriteString("`article` VARCHAR(255) NOT NULL,\n")
+		writer.WriteString("`brand` VARCHAR(255) NOT NULL,\n")
+		writer.WriteString("`name` VARCHAR(255) NOT NULL\n")
+		writer.WriteString(");\n\n")
+	}
 
 	// Пагинация для выборки данных
 	limit := 1000 // Количество записей за одну итерацию
 	offset := 0
+	var products []Product // Предполагаем, что у вас есть структура Product
+
 	for {
 		err := db.Limit(limit).Offset(offset).Find(&products).Error
 		if err != nil {
@@ -316,8 +325,8 @@ func exportToSQLFile(db *gorm.DB, outputPath string) {
 
 		// Генерируем INSERT запросы для текущей страницы
 		for _, product := range products {
-			writer.WriteString(fmt.Sprintf("INSERT INTO `%s` (`article`, `brand`, `name`) VALUES ('%s', '%s', '%s');\n",
-				tableName, escapeSQL(product.Article), escapeSQL(product.Brand), escapeSQL(product.Name)))
+			writer.WriteString(fmt.Sprintf("INSERT INTO `products` (`article`, `brand`, `name`) VALUES ('%s', '%s', '%s');\n",
+				escapeSQL(product.Article), escapeSQL(product.Brand), escapeSQL(product.Name)))
 		}
 
 		offset += limit
