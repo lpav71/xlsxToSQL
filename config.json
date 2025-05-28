@@ -7,6 +7,126 @@
         "article": 2,
         "name": 3
       }
+    },
+    {
+      "filename": "carreta_pricelist_m2jv.xlsx",
+      "columns": {
+        "brand": 1,
+        "article": 2,
+        "name": 3
+      }
+    },
+    {
+      "filename": "mikado_priceфев 25.xlsx",
+      "columns": {
+        "brand": 2,
+        "article": 1,
+        "name": 3
+      }
+    },
+    {
+      "filename": "plentycar-6.xlsx",
+      "columns": {
+        "brand": 1,
+        "article": 2,
+        "name": 3
+      }
+    },
+    {
+      "filename": "price0.xlsx",
+      "columns": {
+        "brand": 1,
+        "article": 2,
+        "name": 3
+      }
+    },
+    {
+      "filename": "price92.xlsx",
+      "columns": {
+        "brand": 1,
+        "article": 2,
+        "name": 3
+      }
+    },
+    {
+      "filename": "киров сводный прайс1 фев 25.xlsx",
+      "columns": {
+        "brand": 2,
+        "article": 1,
+        "name": 3
+      }
+    },
+    {
+      "filename": "киров сводный прайс2 фев 25.xlsx",
+      "columns": {
+        "brand": 2,
+        "article": 1,
+        "name": 3
+      }
+    },
+    {
+      "filename": "курск сводный прайс фев 25.xlsx",
+      "columns": {
+        "brand": 2,
+        "article": 1,
+        "name": 3
+      }
+    },
+    {
+      "filename": "москворечье фев 25.xlsx",
+      "columns": {
+        "brand": 1,
+        "article": 2,
+        "name": 3
+      }
+    },
+    {
+      "filename": "Прайс Москва армтек.xlsx",
+      "columns": {
+        "brand": 1,
+        "article": 2,
+        "name": 3
+      }
+    },
+    {
+      "filename": "Прайс Москва1 армтек.xlsx",
+      "columns": {
+        "brand": 1,
+        "article": 2,
+        "name": 3
+      }
+    },
+    {
+      "filename": "Прайс Ростов армтек.xlsx",
+      "columns": {
+        "brand": 1,
+        "article": 2,
+        "name": 3
+      }
+    },
+    {
+      "filename": "сводный прайс 5 листов 24 год.xlsx",
+      "columns": {
+        "brand": 2,
+        "article": 1,
+        "name": 3
+      }
+    },
+    {
+      "filename": "тринити прайс фев 25.xlsx",
+      "columns": {
+        "brand": 1,
+        "article": 2,
+        "name": 3
+      }
+    },
+    {
+      "filename": "челябинск сводный прайс фев 25.xlsx",
+      "columns": {
+        "brand": 2,
+        "article": 1,
+        "name": 3
+      }
     }
   ]
 }

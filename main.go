@@ -220,6 +220,8 @@ func processXLSXFileWithConfig(db *gorm.DB, filePath string, settings ColumnSett
 		return
 	}
 
+	fmt.Println("Начата обработка файла ", filePath)
+
 	// Проходим по всем листам
 	for _, currentSheet := range sheetList {
 		rows, err := f.GetRows(currentSheet)
@@ -233,10 +235,23 @@ func processXLSXFileWithConfig(db *gorm.DB, filePath string, settings ColumnSett
 				continue // Пропускаем строки, где недостаточно данных
 			}
 
+			// Проверяем существование всех необходимых ключей
+			var brand string
+			var article string
+			var name string
+
 			// Извлекаем значения согласно конфигурации
-			brand := normalizeBrand(row[settings.Brand-1])       // Нормализуем бренд
-			article := normalizeArticle(row[settings.Article-1]) // Нормализуем артикул
-			name := strings.TrimSpace(row[settings.Name-1])      // Очищаем название
+			if len(row) > settings.Brand-1 { // проверка наличия элемента для Brand
+				brand = normalizeBrand(row[settings.Brand-1]) // Нормализуем бренд
+			}
+
+			if len(row) > settings.Article-1 { // проверка наличия элемента для Article
+				article = normalizeArticle(row[settings.Article-1]) // Нормализуем артикул
+			}
+
+			if len(row) > settings.Name-1 { // проверка наличия элемента для Name
+				name = strings.TrimSpace(row[settings.Name-1]) // Очищаем название
+			}
 
 			// Генерируем хэш для комбинации article + brand
 			hash := generateHash(article, brand)
@@ -266,6 +281,8 @@ func processXLSXFileWithConfig(db *gorm.DB, filePath string, settings ColumnSett
 			}
 		}
 	}
+
+	fmt.Println("Закончена обработка файла ", filePath)
 }
 
 // Нормализация артикула (убираем специальные символы и преобразуем в нижний регистр)
