@@ -41,6 +41,14 @@
       }
     },
     {
+      "filename": "price1.xlsx",
+      "columns": {
+        "brand": 2,
+        "article": 1,
+        "name": 3
+      }
+    },
+    {
       "filename": "price92.xlsx",
       "columns": {
         "brand": 1,
